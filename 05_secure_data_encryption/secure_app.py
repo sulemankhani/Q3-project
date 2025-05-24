@@ -25,11 +25,12 @@ def hash_passkey(passkey: str) -> str:
     return hashlib.sha256(passkey.encode()).hexdigest()
 
 # Initialize session state variables
-for key, value in {
+default_state = {
     'stored_data': {},
     'failed_attempts': 0,
     'logged_in': False
-}.items():
+}
+for key, value in default_state.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
@@ -47,7 +48,8 @@ def home_page():
     - 🔁 **Login**: Reauthorize access after multiple failed attempts.
     """)
     st.info(f"📛 Failed decryption attempts: **{st.session_state.failed_attempts}**")
-    st.success(f"🗂️ Stored data keys: {list(st.session_state.stored_data.keys()) or 'None yet'}")
+    stored_keys = list(st.session_state.stored_data.keys()) or ['None yet']
+    st.success(f"🗂️ Stored data keys: {stored_keys}")
 
 def insert_data_page():
     st.title("📥 Insert Data")
@@ -92,7 +94,7 @@ def retrieve_data_page():
                 try:
                     decrypted = decrypt_text(record["encrypted_text"], passkey)
                     st.success("✅ Data retrieved successfully!")
-                    st.code(decrypted)
+                    st.text_area("📄 Decrypted Text:", decrypted, height=150)
                     reset_failed_attempts()
                 except InvalidToken:
                     st.error("❌ Decryption failed. Invalid token.")
